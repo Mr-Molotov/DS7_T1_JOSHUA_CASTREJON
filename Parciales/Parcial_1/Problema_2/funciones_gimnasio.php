@@ -12,8 +12,9 @@ function calcular_promocion($antiguedad_meses){
         $descuento = $cuota_base  * 0.08;
         echo "Has recibido un 8% de descuento.<br>";
     } else {
-        echo "No ha recibido descuento.<br>";
+        
     }
+    return $descuento;
 }
 function calcular_seguro_medico($cuota_base){
     return $seguro_medico = $cuota_base * 0.05;

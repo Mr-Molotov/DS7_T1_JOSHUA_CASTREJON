@@ -15,6 +15,8 @@
 <body>
     <?php
     include 'funciones_gimnasio.php';
+
+    $titulos = ["Nombre", "Membresía","Antiguedad","Costo Base","Desc. Aplicado","Seguro Médico","Costo Total"];
     $membresias =['basica'=>80, 'premium'=>120, 'vip'=>180, 'familiar'=>250, 'corporativa'=>300];
     $miembros = ['Juan Perez'=>['tipo'=>'premium', 'antiguedad'=>'15'],
                 'Ana García'=>['tipo'=>'basica', 'antiguedad'=>'2'],
@@ -24,10 +26,11 @@
     ?>
     <table>
         <tr>
-            <th>
-                Joshua
-            </th>
+            <?php foreach ($titulos as $titulo):?>{
+                <th><?= $titulo ?></th>
+            <?php endforeach; ?>
         </tr>
     </table>
+    
 </body>
 </html>
