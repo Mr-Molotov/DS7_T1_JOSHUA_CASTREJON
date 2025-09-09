@@ -14,11 +14,7 @@
 </head>
 <body>
     <?php
-    $texto = ["ESTA ES UNA FRASE DE PRUEBA", "El mar es azul, el mar es inmenso, el mar es profundo",
-    "Guarda mi nombre, correo electrónico y web en este navegador para la próxima vez que comente",
-    "No love, no fame They won't ever know your name"];
-    require 'operaciones_cadenas.php';
-
+    
     ?>
 </body>
 </html>
