@@ -22,5 +22,12 @@
                 'María Rodríguez'=>['tipo'=>'familiar', 'antiguedad'=>'8'],
                 'Juan Perez'=>['tipo'=>'corporativa', 'antiguedad'=>'18'],];
     ?>
+    <table>
+        <tr>
+            <th>
+                Joshua
+            </th>
+        </tr>
+    </table>
 </body>
 </html>
