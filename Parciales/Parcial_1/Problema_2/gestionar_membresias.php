@@ -14,7 +14,13 @@
 </head>
 <body>
     <?php
-    
+    include 'funciones_gimnasio.php';
+    $membresias =['basica'=>80, 'premium'=>120, 'vip'=>180, 'familiar'=>250, 'corporativa'=>300];
+    $miembros = ['Juan Perez'=>['tipo'=>'premium', 'antiguedad'=>'15'],
+                'Ana García'=>['tipo'=>'basica', 'antiguedad'=>'2'],
+                'Carlos López'=>['tipo'=>'vip', 'antiguedad'=>'30'],
+                'María Rodríguez'=>['tipo'=>'familiar', 'antiguedad'=>'8'],
+                'Juan Perez'=>['tipo'=>'corporativa', 'antiguedad'=>'18'],];
     ?>
 </body>
 </html>
