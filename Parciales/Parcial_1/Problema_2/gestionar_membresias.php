@@ -26,9 +26,12 @@
     ?>
     <table>
         <tr>
-            <?php foreach ($titulos as $titulo):?>{
+            <?php foreach ($titulos as $titulo):?>
                 <th><?= $titulo ?></th>
             <?php endforeach; ?>
+        </tr>
+        <tr>
+            <?php foreach 
         </tr>
     </table>
     
