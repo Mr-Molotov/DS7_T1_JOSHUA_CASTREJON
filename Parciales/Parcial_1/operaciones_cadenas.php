@@ -1,6 +1,6 @@
 <?php
 function contar_palabras_repetidas($texto){
-    foreach ($texto)
+    foreach ($texto);
 
 
 }
