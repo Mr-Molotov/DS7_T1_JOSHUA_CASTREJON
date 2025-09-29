@@ -1,0 +1,32 @@
+{
+    "estudiantes": [
+        {
+            "id": 6,
+            "nombre": "PotatoMaker99",
+            "edad": 25,
+            "carrera": "FISC",
+            "materias": {
+                "Programación": 70,
+                "Ciencias": 65,
+                "Matemáticas": 80
+            },
+            "promedio": 71.66666666666667,
+            "flags": []
+        }
+    ],
+    "graduados": [
+        {
+            "id": 14,
+            "nombre": "PotatoMaker98",
+            "edad": 23,
+            "carrera": "FISC",
+            "materias": {
+                "Matemáticas": 77,
+                "Ciencias": 75,
+                "Inglés": 98
+            },
+            "promedio": 83.33333333333333,
+            "flags": []
+        }
+    ]
+}
