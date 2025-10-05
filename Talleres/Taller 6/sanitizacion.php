@@ -1,10 +1,11 @@
 <?php
 function sanitizarNombre($nombre) {
-    return filter_var(trim($nombre), FILTER_SANITIZE_STRING);
+    return htmlspecialchars(trim($nombre), ENT_QUOTES, 'UTF-8');
 }
 
 function sanitizarEmail($email) {
-    return filter_var(trim($email), FILTER_SANITIZE_EMAIL);
+    $email = filter_var(trim($email), FILTER_SANITIZE_EMAIL);
+    return filter_var($email, FILTER_VALIDATE_EMAIL) ? $email : null;
 }
 
 function sanitizarEdad($edad) {
@@ -12,16 +13,17 @@ function sanitizarEdad($edad) {
 }
 
 function sanitizarSitioWeb($sitioWeb) {
-    return filter_var(trim($sitioWeb), FILTER_SANITIZE_URL);
+    $sitioWeb = filter_var(trim($sitioWeb), FILTER_SANITIZE_URL);
+    return filter_var($sitioWeb, FILTER_VALIDATE_URL) ? $sitioWeb : null;
 }
 
 function sanitizarGenero($genero) {
-    return filter_var(trim($genero), FILTER_SANITIZE_STRING);
+    return htmlspecialchars(trim($genero), ENT_QUOTES, 'UTF-8');
 }
 
 function sanitizarIntereses($intereses) {
     return array_map(function($interes) {
-        return filter_var(trim($interes), FILTER_SANITIZE_STRING);
+        return htmlspecialchars(trim($interes), ENT_QUOTES, 'UTF-8');
     }, $intereses);
 }
 
