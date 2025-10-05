@@ -3,46 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Formulario de Registro Avanzado</title>
+    <title>Formulario Completo</title>
+    <style>
+        .error { color: red; }
+        .campo { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; }
+    </style>
 </head>
 <body>
-    <h2>Formulario de Registro Avanzado</h2>
+    <h1>Formulario de Registro</h1>
+    
+    <?php if (isset($errores) && !empty($errores)): ?>
+        <div class="error">
+            <h3>Errores encontrados:</h3>
+            <ul>
+                <?php foreach ($errores as $error): ?>
+                    <li><?php echo htmlspecialchars($error); ?></li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+    <?php endif; ?>
+
     <form action="procesar.php" method="POST" enctype="multipart/form-data">
-        <label for="nombre">Nombre:</label>
-        <input type="text" id="nombre" name="nombre" required><br><br>
+        <!-- Nombre -->
+        <div class="campo">
+            <label for="nombre">Nombre:</label>
+            <input type="text" id="nombre" name="nombre" 
+                   value="<?php echo isset($datos_previos['nombre']) ? htmlspecialchars($datos_previos['nombre']) : ''; ?>" required>
+        </div>
 
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" required><br><br>
+        <!-- Email -->
+        <div class="campo">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" 
+                   value="<?php echo isset($datos_previos['email']) ? htmlspecialchars($datos_previos['email']) : ''; ?>" required>
+        </div>
 
-        <label for="edad">Edad:</label>
-        <input type="number" id="edad" name="edad" required><br><br>
+        <!-- Fecha de Nacimiento (NUEVO CAMPO) -->
+        <div class="campo">
+            <label for="fecha_nacimiento">Fecha de Nacimiento:</label>
+            <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" 
+                   value="<?php echo isset($datos_previos['fecha_nacimiento']) ? htmlspecialchars($datos_previos['fecha_nacimiento']) : ''; ?>" required>
+        </div>
 
-        <label for="sitio_web">Sitio Web:</label>
-        <input type="url" id="sitio_web" name="sitio_web"><br><br>
+        <!-- Sitio Web -->
+        <div class="campo">
+            <label for="sitioWeb">Sitio Web:</label>
+            <input type="url" id="sitioWeb" name="sitioWeb" 
+                   value="<?php echo isset($datos_previos['sitioWeb']) ? htmlspecialchars($datos_previos['sitioWeb']) : ''; ?>">
+        </div>
 
-        <label for="genero">Género:</label>
-        <select id="genero" name="genero">
-            <option value="masculino">Masculino</option>
-            <option value="femenino">Femenino</option>
-            <option value="otro">Otro</option>
-        </select><br><br>
+        <!-- Género -->
+        <div class="campo">
+            <label>Género:</label>
+            <?php
+            $generos = ['masculino' => 'Masculino', 'femenino' => 'Femenino', 'otro' => 'Otro'];
+            foreach ($generos as $valor => $texto):
+                $checked = (isset($datos_previos['genero']) && $datos_previos['genero'] === $valor) ? 'checked' : '';
+            ?>
+                <label>
+                    <input type="radio" name="genero" value="<?php echo $valor; ?>" <?php echo $checked; ?>>
+                    <?php echo $texto; ?>
+                </label>
+            <?php endforeach; ?>
+        </div>
 
-        <label>Intereses:</label><br>
-        <input type="checkbox" id="deportes" name="intereses[]" value="deportes">
-        <label for="deportes">Deportes</label><br>
-        <input type="checkbox" id="musica" name="intereses[]" value="musica">
-        <label for="musica">Música</label><br>
-        <input type="checkbox" id="lectura" name="intereses[]" value="lectura">
-        <label for="lectura">Lectura</label><br><br>
+        <!-- Intereses -->
+        <div class="campo">
+            <label>Intereses:</label>
+            <?php
+            $intereses = ['deportes' => 'Deportes', 'musica' => 'Música', 'lectura' => 'Lectura', 'tecnologia' => 'Tecnología'];
+            foreach ($intereses as $valor => $texto):
+                $checked = (isset($datos_previos['intereses']) && in_array($valor, $datos_previos['intereses'])) ? 'checked' : '';
+            ?>
+                <label>
+                    <input type="checkbox" name="intereses[]" value="<?php echo $valor; ?>" <?php echo $checked; ?>>
+                    <?php echo $texto; ?>
+                </label>
+            <?php endforeach; ?>
+        </div>
 
-        <label for="comentarios">Comentarios:</label><br>
-        <textarea id="comentarios" name="comentarios" rows="4" cols="50"></textarea><br><br>
+        <!-- Comentarios -->
+        <div class="campo">
+            <label for="comentarios">Comentarios:</label>
+            <textarea id="comentarios" name="comentarios"><?php echo isset($datos_previos['comentarios']) ? htmlspecialchars($datos_previos['comentarios']) : ''; ?></textarea>
+        </div>
 
-        <label for="foto_perfil">Foto de Perfil:</label>
-        <input type="file" id="foto_perfil" name="foto_perfil"><br><br>
+        <!-- Foto de Perfil -->
+        <div class="campo">
+            <label for="foto_perfil">Foto de Perfil:</label>
+            <input type="file" id="foto_perfil" name="foto_perfil" accept="image/*">
+        </div>
 
-        <input type="submit" value="Enviar">
-        <input type="reset" value="Limpiar">
+        <button type="submit">Enviar</button>
     </form>
+
+    <br>
+    <a href="resumen.php">Ver resumen de registros</a>
 </body>
 </html>

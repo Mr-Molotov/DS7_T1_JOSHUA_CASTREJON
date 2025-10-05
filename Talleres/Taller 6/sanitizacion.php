@@ -8,6 +8,11 @@ function sanitizarEmail($email) {
     return filter_var($email, FILTER_VALIDATE_EMAIL) ? $email : null;
 }
 
+function sanitizarFechaNacimiento($fecha) {
+    return htmlspecialchars(trim($fecha), ENT_QUOTES, 'UTF-8');
+}
+
+
 function sanitizarEdad($edad) {
     return filter_var($edad, FILTER_SANITIZE_NUMBER_INT);
 }

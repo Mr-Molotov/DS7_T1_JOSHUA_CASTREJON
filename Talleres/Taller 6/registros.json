@@ -1,0 +1,31 @@
+[
+    {
+        "nombre": "Joshua",
+        "email": "castrejonjoshua99@gmail.com",
+        "fecha_nacimiento": "1999-11-01",
+        "sitioWeb": "https:\/\/www.w3schools.com",
+        "genero": "masculino",
+        "intereses": [
+            "musica"
+        ],
+        "comentarios": "none",
+        "foto_perfil": "uploads\/1",
+        "edad": 25,
+        "timestamp": "2025-10-05 22:41:52"
+    },
+    {
+        "nombre": "Odilka",
+        "email": "odilkanavarro85@gmail.com",
+        "fecha_nacimiento": "1985-02-07",
+        "sitioWeb": "https:\/\/www.w3schools.com",
+        "genero": "femenino",
+        "intereses": [
+            "deportes",
+            "lectura"
+        ],
+        "comentarios": "zapato",
+        "foto_perfil": "uploads\/1",
+        "edad": 40,
+        "timestamp": "2025-10-05 22:44:46"
+    }
+]
