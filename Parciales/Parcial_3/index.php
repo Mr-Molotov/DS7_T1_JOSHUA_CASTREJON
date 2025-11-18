@@ -40,9 +40,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body style="font-family: Arial, sans-serif; margin: 50px; text-align: center;">
     <h2>Inicio de sesión</h2>
     <?php if (!empty($errores)): ?>
-        <ul>
+        <ul style="color: red;">
             <?php foreach ($errores as $error): ?>
-                <li><?php echo $error; ?></li>
+                <?php echo $error; ?><br>
             <?php endforeach; ?>
         </ul>
     <?php endif; ?>
