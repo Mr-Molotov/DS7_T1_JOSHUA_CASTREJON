@@ -1,23 +1,28 @@
 <?php
 require_once "config_pdo.php";
+require_once "log_helper.php";
 
-if($_SERVER["REQUEST_METHOD"] == "POST"){
-    $nombre = $_POST['nombre'];
-    $email = $_POST['email'];
-    
-    $sql = "INSERT INTO usuarios (nombre, email) VALUES (:nombre, :email)";
-    
-    if($stmt = $pdo->prepare($sql)){
-        $stmt->bindParam(":nombre", $nombre, PDO::PARAM_STR);
-        $stmt->bindParam(":email", $email, PDO::PARAM_STR);
-        
-        if($stmt->execute()){
-            echo "Usuario creado con éxito.";
-        } else{
-            echo "ERROR: No se pudo ejecutar $sql. " . $stmt->errorInfo()[2];
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
+    try {
+        $nombre = $_POST['nombre'];
+        $email = $_POST['email'];
+
+        $sql = "INSERT INTO usuarios (nombre, email) VALUES (:nombre, :email)";
+        $stmt = $pdo->prepare($sql);
+
+        if (!$stmt->execute([':nombre' => $nombre, ':email' => $email])) {
+            $error = $stmt->errorInfo()[2];
+            throw new Exception("Error ejecutando consulta: $error");
         }
+
+        echo "Usuario creado con éxito.";
+
+    } catch (Exception $e) {
+        registrar_error("PDO - " . $e->getMessage());
+        echo "Ocurrió un error: " . $e->getMessage();
     }
-    
+
     unset($stmt);
 }
 
