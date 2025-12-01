@@ -1,8 +1,25 @@
 # TALLER_8 - Sistema de Gestión de Biblioteca
 
 ## Requisitos
-- PHP 7.4+ (recomendado 8+)
-- MySQL/MariaDB
+- PHP 8+ recomendado
+- MySQL 5.7+ / MariaDB 10.4+
+- Servidor local (Laragon/XAMPP)
+
+## Estructura del projecto
+TALLER_8/
+├── mysqli/
+│   ├── config.php
+│   ├── libros.php
+│   ├── usuarios.php
+│   ├── prestamos.php
+│   └── index.php
+├── pdo/
+│   ├── config.php
+│   ├── libros.php
+│   ├── usuarios.php
+│   ├── prestamos.php
+│   └── index.php
+└── README.md
 
 ## Instalación
 1. Crear la base de datos y tablas: importar `db_schema.sql`.

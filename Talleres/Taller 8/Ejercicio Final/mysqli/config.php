@@ -1,24 +1,27 @@
 <?php
 // mysqli/config.php
-$DB_HOST = 'localhost';
-$DB_NAME = 'biblioteca';
-$DB_USER = 'tu_usuario';
-$DB_PASS = 'tu_password';
+// Ajusta estos valores
+$db_host = 'localhost';
+$db_user = 'root';
+$db_pass = '';
+$db_name = 'biblioteca';
+$db_port = 3306;
 
-$mysqli = new mysqli($DB_HOST, $DB_USER, $DB_PASS, $DB_NAME);
-if ($mysqli->connect_error) {
-    die('Error de conexión: ' . $mysqli->connect_error);
-}
-$mysqli->set_charset('utf8mb4');
+$conn = new mysqli($db_host, $db_user, $db_pass, $db_name, $db_port);
 
-function get_pagination(): array {
-    $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
-    $limit = isset($_GET['limit']) ? max(1, min(100, (int)$_GET['limit'])) : 10;
-    $offset = ($page - 1) * $limit;
-    return [$page, $limit, $offset];
+if ($conn->connect_errno) {
+    http_response_code(500);
+    die('Error de conexión MySQLi: ' . $conn->connect_error);
 }
 
-function is_valid_date($d): bool {
-    $dt = DateTime::createFromFormat('Y-m-d', $d);
-    return $dt && $dt->format('Y-m-d') === $d;
+// Set charset
+$conn->set_charset('utf8mb4');
+
+// Helper: prepare + check
+function mysqli_prepare_checked($conn, $sql) {
+    $stmt = $conn->prepare($sql);
+    if (!$stmt) {
+        throw new Exception("MySQLi prepare error: " . $conn->error);
+    }
+    return $stmt;
 }

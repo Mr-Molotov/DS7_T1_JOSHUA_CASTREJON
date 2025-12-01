@@ -1,127 +1,111 @@
 <?php
 // pdo/prestamos.php
-require_once __DIR__ . '/config.php';
-header('Content-Type: application/json');
+require_once 'config.php';
 
-$action = $_GET['action'] ?? 'list';
+$action = $_REQUEST['action'] ?? 'list';
 
 try {
-    switch ($action) {
-        case 'create':
-            $usuario_id = (int)($_POST['usuario_id'] ?? 0);
-            $libro_id = (int)($_POST['libro_id'] ?? 0);
-            $fecha = $_POST['fecha_prestamo'] ?? date('Y-m-d');
+    if ($action === 'create' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+        $usuario_id = (int)($_POST['usuario_id'] ?? 0);
+        $libro_id = (int)($_POST['libro_id'] ?? 0);
+        if (!$usuario_id || !$libro_id) throw new Exception('Usuario y libro requeridos.');
 
-            if ($usuario_id <= 0 || $libro_id <= 0 || !is_valid_date($fecha)) {
-                http_response_code(422);
-                echo json_encode(['error'=>'Datos inválidos']);
-                exit;
-            }
+        $pdo->beginTransaction();
 
-            $pdo->beginTransaction();
-            try {
-                // Verificar disponibilidad y bloquear fila
-                $stmt = $pdo->prepare('SELECT cantidad FROM libros WHERE id=? FOR UPDATE');
-                $stmt->execute([$libro_id]);
-                $row = $stmt->fetch();
-                if (!$row || (int)$row['cantidad'] < 1) {
-                    throw new Exception('Libro no disponible');
-                }
+        // SELECT FOR UPDATE emulación: use SELECT ... FOR UPDATE within transaction
+        $stmt = $pdo->prepare("SELECT cantidad_disponible FROM libros WHERE id = ? FOR UPDATE");
+        $stmt->execute([$libro_id]);
+        $row = $stmt->fetch();
+        if (!$row) throw new Exception('Libro no encontrado.');
+        $cantidad = (int)$row['cantidad_disponible'];
+        if ($cantidad <= 0) {
+            $pdo->rollBack();
+            throw new Exception('No hay ejemplares disponibles.');
+        }
 
-                // Insertar préstamo
-                $stmt = $pdo->prepare('INSERT INTO prestamos (usuario_id, libro_id, fecha_prestamo) VALUES (?, ?, ?)');
-                $stmt->execute([$usuario_id, $libro_id, $fecha]);
-                $prestamo_id = (int)$pdo->lastInsertId();
+        $ins = $pdo->prepare("INSERT INTO prestamos (usuario_id, libro_id) VALUES (?, ?)");
+        $ins->execute([$usuario_id, $libro_id]);
 
-                // Actualizar stock
-                $stmt = $pdo->prepare('UPDATE libros SET cantidad = cantidad - 1 WHERE id=?');
-                $stmt->execute([$libro_id]);
+        $upd = $pdo->prepare("UPDATE libros SET cantidad_disponible = cantidad_disponible - 1 WHERE id = ?");
+        $upd->execute([$libro_id]);
 
-                $pdo->commit();
-                echo json_encode(['prestamo_id' => $prestamo_id]);
-            } catch (Throwable $txe) {
-                $pdo->rollBack();
-                http_response_code(400);
-                echo json_encode(['error' => $txe->getMessage()]);
-            }
-            break;
-
-        case 'list':
-            [$page, $limit, $offset] = get_pagination();
-            $sql = 'SELECT p.id, p.usuario_id, u.nombre AS usuario, p.libro_id, l.titulo AS libro,
-                           p.fecha_prestamo, p.fecha_devolucion, p.devuelto
-                    FROM prestamos p
-                    JOIN usuarios u ON u.id = p.usuario_id
-                    JOIN libros l ON l.id = p.libro_id
-                    WHERE p.devuelto = 0
-                    ORDER BY p.fecha_prestamo DESC
-                    LIMIT ? OFFSET ?';
-            $stmt = $pdo->prepare($sql);
-            $stmt->bindValue(1, $limit, PDO::PARAM_INT);
-            $stmt->bindValue(2, $offset, PDO::PARAM_INT);
-            $stmt->execute();
-            echo json_encode(['data'=>$stmt->fetchAll()]);
-            break;
-
-        case 'return':
-            $prestamo_id = (int)($_POST['prestamo_id'] ?? 0);
-            $fecha_dev = $_POST['fecha_devolucion'] ?? date('Y-m-d');
-            if ($prestamo_id <= 0 || !is_valid_date($fecha_dev)) {
-                http_response_code(422);
-                echo json_encode(['error'=>'Datos inválidos']);
-                exit;
-            }
-
-            $pdo->beginTransaction();
-            try {
-                // Obtener libro y bloqueo
-                $stmt = $pdo->prepare('SELECT libro_id, devuelto FROM prestamos WHERE id=? FOR UPDATE');
-                $stmt->execute([$prestamo_id]);
-                $row = $stmt->fetch();
-                if (!$row) { throw new Exception('Préstamo no encontrado'); }
-                if ((int)$row['devuelto'] === 1) { throw new Exception('Préstamo ya devuelto'); }
-                $libro_id = (int)$row['libro_id'];
-
-                // Marcar devolución
-                $stmt = $pdo->prepare('UPDATE prestamos SET devuelto=1, fecha_devolucion=? WHERE id=?');
-                $stmt->execute([$fecha_dev, $prestamo_id]);
-
-                // Incrementar stock
-                $stmt = $pdo->prepare('UPDATE libros SET cantidad = cantidad + 1 WHERE id=?');
-                $stmt->execute([$libro_id]);
-
-                $pdo->commit();
-                echo json_encode(['returned'=>true]);
-            } catch (Throwable $txe) {
-                $pdo->rollBack();
-                http_response_code(400);
-                echo json_encode(['error'=>$txe->getMessage()]);
-            }
-            break;
-
-        case 'historial':
-            $usuario_id = (int)($_GET['usuario_id'] ?? 0);
-            [$page, $limit, $offset] = get_pagination();
-            if ($usuario_id <= 0) { http_response_code(422); echo json_encode(['error'=>'Usuario inválido']); exit; }
-            $sql = 'SELECT p.id, l.titulo AS libro, p.fecha_prestamo, p.fecha_devolucion, p.devuelto
-                    FROM prestamos p
-                    JOIN libros l ON l.id = p.libro_id
-                    WHERE p.usuario_id = ?
-                    ORDER BY p.creado_en DESC
-                    LIMIT ? OFFSET ?';
-            $stmt = $pdo->prepare($sql);
-            $stmt->bindValue(1, $usuario_id, PDO::PARAM_INT);
-            $stmt->bindValue(2, $limit, PDO::PARAM_INT);
-            $stmt->bindValue(3, $offset, PDO::PARAM_INT);
-            $stmt->execute();
-            echo json_encode(['usuario_id'=>$usuario_id,'data'=>$stmt->fetchAll()]);
-            break;
-
-        default:
-            http_response_code(404);
-            echo json_encode(['error'=>'Acción no válida']);
+        $pdo->commit();
+        echo "Préstamo registrado ID: " . $pdo->lastInsertId();
+        exit;
     }
-} catch (Throwable $e) {
-    http_response_code(500);
-    echo json_encode(['error'=>'Error interno']);
+
+    if ($action === 'return' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+        $prestamo_id = (int)($_POST['prestamo_id'] ?? 0);
+        if (!$prestamo_id) throw new Exception('ID préstamo inválido.');
+
+        $pdo->beginTransaction();
+
+        $stmt = $pdo->prepare("SELECT libro_id, estado FROM prestamos WHERE id = ? FOR UPDATE");
+        $stmt->execute([$prestamo_id]);
+        $row = $stmt->fetch();
+        if (!$row) throw new Exception('Préstamo no encontrado.');
+        if ($row['estado'] !== 'activo') {
+            $pdo->rollBack();
+            throw new Exception('Préstamo ya devuelto.');
+        }
+
+        $now = date('Y-m-d H:i:s');
+        $upd = $pdo->prepare("UPDATE prestamos SET fecha_devolucion = ?, estado = 'devuelto' WHERE id = ?");
+        $upd->execute([$now, $prestamo_id]);
+
+        $inc = $pdo->prepare("UPDATE libros SET cantidad_disponible = cantidad_disponible + 1 WHERE id = ?");
+        $inc->execute([$row['libro_id']]);
+
+        $pdo->commit();
+        echo "Devolución registrada.";
+        exit;
+    }
+
+    // Listar activos con JOIN
+    $page = max(1, (int)($_GET['page'] ?? 1));
+    $limit = max(1, min(100, (int)($_GET['limit'] ?? 10)));
+    $offset = ($page - 1) * $limit;
+
+    $total = (int)$pdo->query("SELECT COUNT(*) FROM prestamos WHERE estado = 'activo'")->fetchColumn();
+
+    $stmt = $pdo->prepare("SELECT p.id, p.usuario_id, p.libro_id, p.fecha_prestamo, u.nombre AS usuario_nombre, l.titulo AS libro_titulo
+        FROM prestamos p
+        JOIN usuarios u ON p.usuario_id = u.id
+        JOIN libros l ON p.libro_id = l.id
+        WHERE p.estado = 'activo'
+        ORDER BY p.fecha_prestamo DESC
+        LIMIT ? OFFSET ?");
+    $stmt->execute([$limit, $offset]);
+    $rows = $stmt->fetchAll();
+
+    echo "<h2>Préstamos activos (Página {$page})</h2>";
+    echo "<table border='1' cellpadding='6'><tr><th>ID</th><th>Usuario</th><th>Libro</th><th>Fecha</th><th>Acción</th></tr>";
+    foreach($rows as $row) {
+        echo "<tr>
+            <td>{$row['id']}</td>
+            <td>".htmlspecialchars($row['usuario_nombre'])."</td>
+            <td>".htmlspecialchars($row['libro_titulo'])."</td>
+            <td>{$row['fecha_prestamo']}</td>
+            <td>
+              <form method='post' style='display:inline'>
+                <input type='hidden' name='action' value='return'>
+                <input type='hidden' name='prestamo_id' value='{$row['id']}'>
+                <button type='submit'>Registrar devolución</button>
+              </form>
+            </td>
+        </tr>";
+    }
+    echo "</table>";
+
+    $totalPages = (int)ceil($total / $limit);
+    echo "<p>Total: {$total} | Páginas: {$totalPages}</p>";
+    for ($p=1;$p<=$totalPages;$p++){
+        $link = "?page={$p}&limit={$limit}";
+        echo ($p==$page) ? "<strong>{$p}</strong> " : "<a href='{$link}'>{$p}</a> ";
+    }
+
+} catch (Exception $e) {
+    if ($pdo->inTransaction()) $pdo->rollBack();
+    http_response_code(400);
+    echo "Error: " . htmlspecialchars($e->getMessage());
 }
