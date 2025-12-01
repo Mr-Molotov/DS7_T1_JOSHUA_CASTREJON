@@ -1,5 +1,5 @@
 <?php
-define('GITHUB_TOKEN', 'tu_token_aqui');
+define('GITHUB_TOKEN', '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');
 define('GITHUB_API_URL', 'https://api.github.com');
 define('USER_AGENT', 'PHP GitHub API Client');
 
@@ -76,6 +76,57 @@ class GitHubClient {
         
         return json_decode($response, true);
     }
+
+    public function put($endpoint, $data = null) {
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $this->baseUrl . $endpoint);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PUT");
+
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array_merge(
+        $this->getHeaders(),
+        ['Content-Type: application/json']
+    ));
+
+    if ($data !== null) {
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+    }
+
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+    if (curl_errno($ch)) {
+        throw new Exception('Error cURL: ' . curl_error($ch));
+    }
+
+    curl_close($ch);
+
+    // Para operaciones PUT de GitHub normalmente regresa 204 sin cuerpo
+    return ($httpCode >= 200 && $httpCode < 300);
+}
+
+public function delete($endpoint) {
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $this->baseUrl . $endpoint);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
+    
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $this->getHeaders());
+
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+    if (curl_errno($ch)) {
+        throw new Exception('Error cURL: ' . curl_error($ch));
+    }
+
+    curl_close($ch);
+
+    // DELETE también devuelve 204 normalmente
+    return ($httpCode >= 200 && $httpCode < 300);
+}
+
+
 }
 
 // Crear instancia del cliente
