@@ -10,13 +10,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $precio = mysqli_real_escape_string($conn, $_POST['precio']);
         $cantidad = mysqli_real_escape_string($conn, $_POST['cantidad']);
 
-        $sql = "INSERT INTO productos (nombre, precio, cantidad) VALUES (?, ?, ?)";
+        $sql = "INSERT INTO productos (nombre, precio) VALUES (?, ?)";
 
         if (!$stmt = mysqli_prepare($conn, $sql)) {
             throw new Exception("Error preparando consulta: " . mysqli_error($conn));
         }
 
-        mysqli_stmt_bind_param($stmt, "sd", $nombre, $precio, $cantidad);
+        mysqli_stmt_bind_param($stmt, "sd", $nombre, $precio);
 
         if (!mysqli_stmt_execute($stmt)) {
             throw new Exception("Error ejecutando consulta: " . mysqli_error($conn));
